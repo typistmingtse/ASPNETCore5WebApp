@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ASPNETCore5Demo.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace ASPNETCore5Demo.Controllers
 {
@@ -40,8 +41,13 @@ namespace ASPNETCore5Demo.Controllers
         [HttpPost("")]
         public ActionResult<Course> PostCourse(Course model)
         {
-            model.DateModified = DateTime.Now;
+            // model.DateModified = DateTime.Now;
             dbContext.Courses.Add(model);
+            EntityEntry entityEntry = dbContext.Entry(model);
+            if(entityEntry.State == EntityState.Modified)
+            {
+                model.DateModified = DateTime.Now;
+            }
             dbContext.SaveChanges();
             return Created($"/api/Course/{model.CourseId}", model);
         }
@@ -52,8 +58,12 @@ namespace ASPNETCore5Demo.Controllers
             var updateItem = dbContext.Courses.Find(id);
             updateItem.Title = model.Title;
             updateItem.Credits = model.Credits;
-            updateItem.DateModified = DateTime.Now;
+            // updateItem.DateModified = DateTime.Now;
             dbContext.Update(updateItem);
+            EntityEntry entityEntry = dbContext.Entry(updateItem);
+            if(entityEntry.State == EntityState.Modified){
+                updateItem.DateModified = DateTime.Now;
+            }
             dbContext.SaveChanges();
             return NoContent();
         }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ASPNETCore5Demo.Models;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore;
 
 namespace ASPNETCore5Demo.Controllers
 {
@@ -32,8 +34,13 @@ namespace ASPNETCore5Demo.Controllers
         [HttpPost("")]
         public ActionResult<Person> PostPerson(Person model)
         {
-            model.DateModified = DateTime.Now;
+            // model.DateModified = DateTime.Now;
             db.Person.Add(model);
+            EntityEntry entityEntry = db.Entry(model);
+            if(entityEntry.State == EntityState.Modified) 
+            {
+                model.DateModified = DateTime.Now;
+            }
             db.SaveChanges();
             return Created($"/api/Person/{model.Id}",model);
         }
@@ -43,8 +50,13 @@ namespace ASPNETCore5Demo.Controllers
         {
             var updateItem = db.Person.Find(id);
             updateItem.FirstName = model.FirstName;
-            updateItem.DateModified = DateTime.Now;
+            // updateItem.DateModified = DateTime.Now;
             db.Update(updateItem);
+            EntityEntry entityEntry = db.Entry(model);
+            if(entityEntry.State == EntityState.Modified)
+            {
+                model.DateModified = DateTime.Now;
+            }
             db.SaveChanges();
             return NoContent();
         }
