@@ -22,22 +22,31 @@ namespace ASPNETCore5Demo.Controllers
         [HttpGet("")]
         public ActionResult<IEnumerable<Person>> GetPersons()
         {
-            return db.Person.ToList();
+            return db.Person.Where(z => z.IsDeleted == false).ToList();
         }
 
         [HttpGet("{id}")]
         public ActionResult<Person> GetPersonById(int id)
         {
-            return db.Person.Find(id);
+            return db.Person.FirstOrDefault(z => z.Id == id && z.IsDeleted == false);
         }
 
         [HttpPost("")]
         public ActionResult<Person> PostPerson(Person model)
         {
             // model.DateModified = DateTime.Now;
-            db.Person.Add(model);
+            if(db.Person.FirstOrDefault(z => z.Id == model.Id && z.IsDeleted == true) == null)
+            {
+                db.Person.Add(model);
+            }
+            else
+            {
+                model.IsDeleted = false;
+                db.Person.Update(model);
+            }
+
             EntityEntry entityEntry = db.Entry(model);
-            if(entityEntry.State == EntityState.Modified) 
+            if(entityEntry.State == EntityState.Added || entityEntry.State == EntityState.Modified) 
             {
                 model.DateModified = DateTime.Now;
             }
@@ -48,7 +57,7 @@ namespace ASPNETCore5Demo.Controllers
         [HttpPut("{id}")]
         public IActionResult PutPerson(int id, Person model)
         {
-            var updateItem = db.Person.Find(id);
+            var updateItem = db.Person.FirstOrDefault(z => z.Id == id && z.IsDeleted == false);
             updateItem.FirstName = model.FirstName;
             // updateItem.DateModified = DateTime.Now;
             db.Update(updateItem);
@@ -65,7 +74,8 @@ namespace ASPNETCore5Demo.Controllers
         public ActionResult<Person> DeletePersonById(int id)
         {
             var deleteItem = db.Person.Find(id);
-            db.Person.Remove(deleteItem);
+            deleteItem.IsDeleted = true;
+            db.Person.Update(deleteItem);
             db.SaveChanges();
             return Ok(deleteItem);
         }

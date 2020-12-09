@@ -23,28 +23,37 @@ namespace ASPNETCore5Demo.Controllers
         [HttpGet("")]
         public ActionResult<IEnumerable<Course>> GetCourses()
         {
-            return dbContext.Courses.ToList();
+            return dbContext.Courses.Where(z => z.IsDeleted == false).ToList();
         }
 
         [HttpGet("{id}")]
         public ActionResult<Course> GetCourseById(int id) 
         {
-            return dbContext.Courses.Find(id);
+            return dbContext.Courses.FirstOrDefault(z => z.CourseId == id && z.IsDeleted == false);
         }
 
         [HttpGet("/credits/{credit}")]
         public ActionResult<IEnumerable<Course>> GetCourseByCredit(int credit)
         {
-            return dbContext.Courses.Where(z => z.Credits == credit).ToList();
+            return dbContext.Courses.Where(z => z.Credits == credit && z.IsDeleted == false).ToList();
         }
 
         [HttpPost("")]
         public ActionResult<Course> PostCourse(Course model)
         {
             // model.DateModified = DateTime.Now;
-            dbContext.Courses.Add(model);
+            if (dbContext.Courses.Find(model.CourseId) == null)
+            {
+                dbContext.Courses.Add(model);
+            }
+            else
+            {
+                model.IsDeleted = false;
+                dbContext.Courses.Update(model);
+            }
+            
             EntityEntry entityEntry = dbContext.Entry(model);
-            if(entityEntry.State == EntityState.Modified)
+            if(entityEntry.State == EntityState.Added || entityEntry.State == EntityState.Modified)
             {
                 model.DateModified = DateTime.Now;
             }
@@ -55,7 +64,7 @@ namespace ASPNETCore5Demo.Controllers
         [HttpPut("{id}")]
         public IActionResult PutCourse(int id, Course model)
         {
-            var updateItem = dbContext.Courses.Find(id);
+            var updateItem = dbContext.Courses.FirstOrDefault(z => z.CourseId == id && z.IsDeleted == false);
             updateItem.Title = model.Title;
             updateItem.Credits = model.Credits;
             // updateItem.DateModified = DateTime.Now;
@@ -72,27 +81,29 @@ namespace ASPNETCore5Demo.Controllers
         public ActionResult<Course> DeleteCourseById(int id)
         {
             var delItem = dbContext.Courses.Find(id);
-            dbContext.Courses.Remove(delItem);
+            delItem.IsDeleted = true;
+            dbContext.Courses.Update(delItem);
+            delItem.DateModified = DateTime.Now;
             dbContext.SaveChanges();
             return Ok(delItem);
         }
 
-        [HttpGet("")]
+        [HttpGet("VwCourseStudent")]
         public ActionResult<IEnumerable<VwCourseStudent>> GetVwCourseStudent()
         {
             return dbContext.VwCourseStudents.ToList();
         }
         
-        [HttpGet("")]
+        [HttpGet("VwCourseStudentCount")]
         public ActionResult<IEnumerable<VwCourseStudentCount>> GetVwCourseStudentCount()
         {
             return dbContext.VwCourseStudentCounts.ToList();
         }
         
-        [HttpGet("")]
+        [HttpGet("VwDepartmentCourseCount")]
         public ActionResult<IEnumerable<VwDepartmentCourseCount>> GetVwDepartmentCourseCount()
         {
-            return dbContext.VwDepartmentCourseCounts.FromSqlRaw("select SELECT   DepartmentID, .Name, CourseCount from VwDepartmentCourseCount").ToList();
+            return dbContext.VwDepartmentCourseCounts.FromSqlRaw("select DepartmentID, Name, CourseCount from VwDepartmentCourseCount").ToList();
         }
     }
 }
