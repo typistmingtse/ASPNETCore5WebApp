@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 #nullable disable
@@ -20,8 +21,13 @@ namespace ASPNETCore5Demo.Models
         public DateTime? DateModified { get; set; }
         public bool? IsDeleted { get; set; }
 
+        [JsonIgnore]
         public virtual Department Department { get; set; }
+
+        [JsonIgnore]
         public virtual ICollection<CourseInstructor> CourseInstructors { get; set; }
+
+        [JsonIgnore]
         public virtual ICollection<Enrollment> Enrollments { get; set; }
     }
 }

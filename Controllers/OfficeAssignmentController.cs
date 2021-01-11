@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ASPNETCore5Demo.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace ASPNETCore5Demo.Controllers
 {
@@ -30,6 +31,8 @@ namespace ASPNETCore5Demo.Controllers
         }
 
         [HttpPost("")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesDefaultResponseType]
         public ActionResult<OfficeAssignment> PostOfficeAssignment(OfficeAssignment model)
         {
             db.OfficeAssignments.Add(model);
@@ -38,6 +41,8 @@ namespace ASPNETCore5Demo.Controllers
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesDefaultResponseType]
         public IActionResult PutOfficeAssignment(int id, OfficeAssignment model)
         {
             var updateItem = db.OfficeAssignments.Find(id);

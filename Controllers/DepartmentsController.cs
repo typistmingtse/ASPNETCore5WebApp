@@ -5,9 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ASPNETCore5Demo.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ASPNETCore5Demo.Controllers
 {
+    [Authorize(Roles = "Manager")]
     [Route("api/[controller]")]
     [ApiController]
     public class DepartmentsController : ControllerBase
@@ -21,17 +24,28 @@ namespace ASPNETCore5Demo.Controllers
         [HttpGet("")]
         public ActionResult<IEnumerable<Department>> GetDepartments()
         {
-            return new List<Department> { };
+            return db.Departments.ToList();
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesDefaultResponseType]
         public ActionResult<IEnumerable<Course>> GetDepartmentCourses(int id)
         {
+            if(db.Departments.Include(p => p.Courses)
+                .First(p => p.DepartmentId == id).Courses.ToList().Count == 0)
+            {
+                return NoContent();
+            }
+
             return db.Departments.Include(p => p.Courses)
                 .First(p => p.DepartmentId == id).Courses.ToList();  
         }
 
         [HttpPost("")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesDefaultResponseType]
         public ActionResult<Department> PostDepartment(Department model)
         {
             model.DateModified = DateTime.Now;
@@ -42,6 +56,8 @@ namespace ASPNETCore5Demo.Controllers
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesDefaultResponseType]
         public IActionResult PutDepartment(int id, Department model)
         {
              var updateItem = db.Departments.Find(id);

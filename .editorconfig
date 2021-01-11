@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CA2201: 請勿引發保留的例外狀況類型
+dotnet_diagnostic.CA2201.severity = none

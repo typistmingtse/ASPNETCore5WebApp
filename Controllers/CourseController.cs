@@ -6,9 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using ASPNETCore5Demo.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ASPNETCore5Demo.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CourseController : ControllerBase
@@ -32,6 +35,13 @@ namespace ASPNETCore5Demo.Controllers
             return dbContext.Courses.FirstOrDefault(z => z.CourseId == id && z.IsDeleted == false);
         }
 
+        [HttpGet("error")]
+        public IActionResult Error()
+        {
+            throw new Exception("ERROR");
+            return Ok("TEST");
+        }
+
         [HttpGet("/credits/{credit}")]
         public ActionResult<IEnumerable<Course>> GetCourseByCredit(int credit)
         {
@@ -39,6 +49,8 @@ namespace ASPNETCore5Demo.Controllers
         }
 
         [HttpPost("")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesDefaultResponseType]
         public ActionResult<Course> PostCourse(Course model)
         {
             // model.DateModified = DateTime.Now;
@@ -104,6 +116,20 @@ namespace ASPNETCore5Demo.Controllers
         public ActionResult<IEnumerable<VwDepartmentCourseCount>> GetVwDepartmentCourseCount()
         {
             return dbContext.VwDepartmentCourseCounts.FromSqlRaw("select DepartmentID, Name, CourseCount from VwDepartmentCourseCount").ToList();
+        }
+
+        [Authorize]
+        [HttpGet("~/claims")]
+        public IActionResult GetClaims()
+        {
+            return Ok(User.Claims.Select(p => new { p.Type, p.Value }));
+        }
+
+        [Authorize]
+        [HttpGet("~/{username}")]
+        public IActionResult GetUserName()
+        {
+            return Ok(User.Identity.Name);
         }
     }
 }

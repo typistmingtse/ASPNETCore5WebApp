@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ASPNETCore5Demo.Models;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 
 namespace ASPNETCore5Demo.Controllers
 {
@@ -32,6 +33,8 @@ namespace ASPNETCore5Demo.Controllers
         }
 
         [HttpPost("")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesDefaultResponseType]
         public ActionResult<Person> PostPerson(Person model)
         {
             // model.DateModified = DateTime.Now;
